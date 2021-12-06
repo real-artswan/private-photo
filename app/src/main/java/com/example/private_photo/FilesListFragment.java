@@ -1,15 +1,12 @@
 package com.example.private_photo;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.private_photo.databinding.FragmentFilesListBinding;
@@ -24,34 +21,33 @@ public class FilesListFragment extends Fragment {
 
 
     private FragmentFilesListBinding binding;
-    private final List<String> filesList = new ArrayList<String>();
+    private final List<String> filesList = new ArrayList<>();
     private FileItemAdapter adapter;
 
     private void reloadFiles() {
         filesList.clear();
-        File dir = this.getActivity().getExternalFilesDir(null);
+        File dir = this.requireActivity().getExternalFilesDir(null);
         this.filesList.addAll(Arrays.asList(dir.list()));
         adapter.notifyDataSetChanged();
     }
 
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
+            @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        ImageViewViewModel viewModel = new ViewModelProvider(getActivity()).get(ImageViewViewModel.class);
         adapter = new FileItemAdapter(this.getActivity(), this.filesList, new FileItemAdapter.FileItemListener() {
             @Override
             public void onItemClick(String item, int position) {
-                viewModel.isPreview.setValue(false);
-                String fullFileName = new File(getActivity().getExternalFilesDir(null), item).getAbsolutePath();
-                viewModel.fileName.setValue(fullFileName);
+                String fullFileName = new File(requireActivity().getExternalFilesDir(null), item).getAbsolutePath();
+                Bundle bundle = new Bundle();
+                bundle.putString("fileName", fullFileName);
                 NavHostFragment.findNavController(FilesListFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
+                        .navigate(R.id.action_FirstFragment_to_SecondFragment, bundle);
             }
             @Override
             public void onItemDelete(String item, int position) {
-                File fullFileName = new File(getActivity().getExternalFilesDir(null), item);
+                File fullFileName = new File(requireActivity().getExternalFilesDir(null), item);
                 fullFileName.delete();
                 filesList.remove(position);
                 adapter.notifyItemRemoved(position);
